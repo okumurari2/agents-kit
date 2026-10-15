@@ -65,3 +65,10 @@ python3 .agents/bin/agent done 0003        # 確保を解いて done にする
 ## 人間（ユーザー）向け
 - 誰が何をしているか：`python3 .agents/bin/agent status`、または GitHub 上で `.agents/state/` を開く。
 - 片方に仕事を振る：`agent new "..." --to gemini` で owner を指定したタスクを作って push する（`open` のまま割り当て済みになる）。各エージェントには「`.agents` を見て自分宛てのタスクをやって」と頼めばよい。
+
+## このキット自体を変更するとき（上流への push）
+`.agents/PROTOCOL.md`・`.agents/bin/agent`・`.agents/templates/*`・`.agents/install.sh` は **https://github.com/okumurari2/agents-kit が正本**で、導入先リポジトリのコピーは `install.sh` で上書きされる。
+- 共有脳の仕組み（プロトコル・道具・ひな形・install.sh・stub の文面）を変えたいときは、**導入先のコピーを直さず agents-kit に push する**。導入先で直しても次の更新で消える。
+- 手順：agents-kit を clone（または追加）→ 変更 → commit → push → 導入先で `curl -fsSL https://raw.githubusercontent.com/okumurari2/agents-kit/main/install.sh | sh -s -- .` で取り込む。
+- 導入先固有の設定（`AGENTS.md` の「並行開発の設定」、`state/`、`tasks/`、`decisions.md`）は対象外。各リポジトリで直接変更する。
+- 緊急で導入先のコピーを先に直した場合も、同じ変更を必ず agents-kit に push する。

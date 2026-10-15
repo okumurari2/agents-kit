@@ -38,6 +38,7 @@ grep -q '.agents/PROTOCOL.md' AGENTS.md || cat >> AGENTS.md <<'MD'
 - 確認コマンド：（例 `npm test`、`python3 -m pytest`）
 - 衝突しやすいファイル：（着手前にタスクの `files:` で確保するもの）
 - 生成物（衝突したら作り直すもの）：
+- 共有脳（`.agents/`）の仕組み自体の変更は、このリポジトリでなく上流 https://github.com/okumurari2/agents-kit に push する（`.agents/PROTOCOL.md` 末尾）。
 MD
 
 stub() {  # $1=ファイル $2=import行 $3=名前

@@ -3,9 +3,13 @@
 #   sh install.sh /path/to/other-repo
 # リポジトリを手元に置かず GitHub から直接入れる場合（対象リポジトリの直下で）:
 #   curl -fsSL https://raw.githubusercontent.com/okumurari2/agents-kit/main/install.sh | sh -s -- .
+#
+# CLAUDE.md を触らせたくない場合（upstream 管理のファイルなど）は、補足の置き場所を変える:
+#   CLAUDE_FILE=.claude/CLAUDE.md sh install.sh .     # ルートの CLAUDE.md は読むだけ・書かない
 set -eu
 DST=${1:?使い方: sh install.sh 対象リポジトリのパス}
 SRC=$(cd "$(dirname "$0")" 2>/dev/null && pwd || true)
+CLAUDE_FILE=${CLAUDE_FILE:-CLAUDE.md}   # Claude 用の補足を置くファイル。CLAUDE.md 以外ならルートの CLAUDE.md は変えない
 RAW=${AGENTS_KIT_URL:-https://raw.githubusercontent.com/okumurari2/agents-kit/main}
 cd "$DST"
 mkdir -p .agents/bin .agents/templates .agents/state .agents/tasks
@@ -27,7 +31,7 @@ done
 
 # 方針の正本を AGENTS.md に。既存の CLAUDE.md があれば中身をそこへ移す。
 if [ ! -f AGENTS.md ]; then
-  if [ -f CLAUDE.md ] && ! grep -q '^@AGENTS.md' CLAUDE.md; then git mv CLAUDE.md AGENTS.md 2>/dev/null || mv CLAUDE.md AGENTS.md
+  if [ "$CLAUDE_FILE" = CLAUDE.md ] && [ -f CLAUDE.md ] && ! grep -q '^@AGENTS.md' CLAUDE.md; then git mv CLAUDE.md AGENTS.md 2>/dev/null || mv CLAUDE.md AGENTS.md
   else printf '# %s：開発メモ（全AIエージェント共通）\n\n' "$(basename "$(pwd)")" > AGENTS.md; fi
 fi
 grep -q '.agents/PROTOCOL.md' AGENTS.md || cat >> AGENTS.md <<'MD'
@@ -52,7 +56,8 @@ stub() {  # $1=ファイル $2=import行 $3=名前
     if [ -f "$1" ]; then echo; cat "$1"; fi; } > "$1.tmp"
   mv "$1.tmp" "$1"
 }
-stub CLAUDE.md '@AGENTS.md' Claude claude
+if [ "$CLAUDE_FILE" = CLAUDE.md ]; then stub CLAUDE.md '@AGENTS.md' Claude claude
+else mkdir -p "$(dirname "$CLAUDE_FILE")"; stub "$CLAUDE_FILE" '@'"$(echo "$(dirname "$CLAUDE_FILE")" | sed 's#[^/]*#..#g')"/AGENTS.md Claude claude; fi
 stub GEMINI.md '@./AGENTS.md' Gemini gemini
 
 echo "導入しました。AGENTS.md の「並行開発の設定」を埋めてから commit / push してください。"
